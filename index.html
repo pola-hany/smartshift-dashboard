@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدير البريكات - Dashboard احترافي (محسن الأداء)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', system-ui, 'Cairo', sans-serif;
+        }
+
+        body {
+            background: #0a0c10;
+            color: #eef2ff;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        :root {
+            --bg-card: #1e1f2c;
+            --bg-sidebar: #13141f;
+            --border: #2a2c3a;
+            --text-muted: #9ca3af;
+            --danger: #f97316;
+            --danger-dark: #dc2626;
+            --success: #10b981;
+            --info: #3b82f6;
+            --purple: #a855f7;
+            --orange: #f97316;
+            --warning: #facc15;
+        }
+
+        .dashboard-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 260px;
+            transition: all 0.3s;
+        }
+
+        .sidebar {
+            width: 360px;
+            background: var(--bg-sidebar);
+            border-radius: 28px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 16px 12px;
+            border: 1px solid var(--border);
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h4 {
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 8px;
+        }
+
+        .search-bar {
+            margin-bottom: 28px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 60px;
+            background: #252837;
+            border: 1px solid var(--border);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .search-bar input:focus {
+            border-color: var(--info);
+            background: #1e212e;
+        }
+
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .member-card {
+            background: var(--bg-card);
+            border-radius: 28px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.3s;
+        }
+
+        .member-card:hover {
+            transform: translateY(-3px);
+            border-color: #3f4257;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .member-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #2a2e44;
+        }
+
+        .activity-type {
+            font-size: 14px;
+            margin: 8px 0;
+            color: var(--text-muted);
+        }
+
+        .timer {
+            font-size: 32px;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 2px;
+            margin: 12px 0;
+        }
+
+        .progress-bar-container {
+            background: #2a2e3f;
+            border-radius: 20px;
+            height: 8px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--info);
+            transition: width 0.1s linear;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        button {
+            background: #2d3142;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+        }
+
+        button.start-btn { background: #10b981; }
+        button.end-btn { background: #ef4444; }
+        button:hover { filter: brightness(1.1); transform: scale(0.97); }
+
+        .pulse-animation {
+            animation: pulseRed 0.5s ease-in-out 2;
+        }
+
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); border-color: #ef4444;}
+            70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); border-color: #ef4444;}
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0);}
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .activity-card {
+            background: #1b1d2b;
+            border-radius: 24px;
+            padding: 14px;
+            margin-bottom: 16px;
+            border-right: 5px solid;
+        }
+
+        .stars {
+            color: #facc15;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .close-sidebar-btn {
+            background: #ef4444;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 14px;
+        }
+
+        .toggle-sidebar {
+            background: #3b82f6;
+            margin-bottom: 16px;
+            width: auto;
+            display: inline-block;
+            padding: 8px 18px;
+        }
+
+        .delay-text {
+            color: #f97316;
+            font-weight: bold;
+        }
+        .on-time { color: #10b981; }
+
+        @media (max-width: 760px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="main-content">
+        <button class="toggle-sidebar" id="toggleSidebarBtn">📋 سجل النشاط ☰</button>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="search-bar">
+            <input type="text" id="globalSearch" placeholder="🔍 ابحث عن محضر بالاسم ...">
+        </div>
+        <div id="membersGridContainer" class="members-grid"></div>
+    </div>
+    <div class="sidebar" id="activitySidebar">
+        <h3>📜 سجل النشاط التفصيلي
+            <button id="closeSidebarBtn" class="close-sidebar-btn" style="background:#ef4444;">✖</button>
+        </h3>
+        <div class="activity-search">
+            <input type="text" id="activitySearchInput" placeholder="🔍 بحث في النشاط بالاسم ..." style="width:100%; padding:10px; border-radius:40px; background:#252837; border:none; color:white;">
+        </div>
+        <div id="activityList"></div>
+        <button id="showAllStatsBtn" style="margin-top:20px; background:#8b5cf6;">📊 عرض الكل (إحصائيات متقدمة)</button>
+    </div>
+</div>
+
+<script>
+    // ---------- البيانات الثابتة ----------
+  const MEMBERS = [
+    { id: 1, name: "شمس محمد" },
+    { id: 2, name: "شيماء عاطف" },
+    { id: 3, name: "رحمه سيد عبد" },
+    { id: 4, name: "امنية على" },
+    { id: 5, name: "نورهان رمضان" },
+    { id: 6, name: "ساره عبد الغنى" },
+    { id: 7, name: "ساره شعبان" },
+    { id: 8, name: "انجى ابراهيم" },
+    { id: 9, name: "اسراء الحسينى" },
+    { id: 10, name: "فرح عصام" },
+    { id: 11, name: "سجى احمد" },
+    { id: 12, name: "مريم جمال" },
+    { id: 13, name: "هاله عبدالغنى" },
+    { id: 14, name: "سعاد عادل" },
+    { id: 15, name: "اميره فاروق" },
+    { id: 16, name: "حبيبه على" },
+    { id: 17, name: "سندس صادق" },
+    { id: 18, name: "رضوى عبدالله" },
+    { id: 19, name: "جهاد محمد" },
+    { id: 20, name: "منة الله فريد" },
+    { id: 21, name: "رقية محمد" },
+    { id: 22, name: "شهد عماد" },
+    { id: 23, name: "اميره سمير" },
+    { id: 24, name: "شيماء مجدى" },
+    { id: 25, name: "نعيمه كمال" },
+    { id: 26, name: "كاميليا رضا" },
+    { id: 27, name: "بسمله عادل" },
+    { id: 28, name: "نورهان ابراهيم" },
+    { id: 29, name: "بسنت سيد" },
+    { id: 30, name: "ملك محمد" },
+    { id: 31, name: "كريمان عبد النبي" },
+    { id: 32, name: "فاطمة ايمن" },
+    { id: 33, name: "اسماء عطا" },
+    { id: 34, name: "ملك بدر" },
+    { id: 35, name: "سعاد شريف" },
+    { id: 36, name: "مريم العمرى" }
+];
+
+    const ACTIVITY_DURATIONS = {
+        break: 45 * 60 * 1000,
+        prayer: 15 * 60 * 1000,
+        bathroom: 15 * 60 * 1000
+    };
+    const ACTIVITY_NAMES = { break: "بريك", prayer: "صلاة", bathroom: "حمام" };
+    const ACTIVITY_COLORS = { break: "#3b82f6", prayer: "#a855f7", bathroom: "#f97316" };
+
+    let membersState = [];
+    let intervalId = null;
+    let soundTriggerMap = new Map();
+    let currentSearchTerm = "";
+
+    // ---------- دوال مساعدة ----------
+    function getInitialState() {
+        return MEMBERS.map(m => ({
+            id: m.id,
+            name: m.name,
+            currentActivity: null,
+            startTime: null,
+            status: 'working',
+            totalDelayAcc: 0,
+            activityLog: []
+        }));
+    }
+
+    function saveToLocalStorage() {
+        const toStore = membersState.map(m => ({
+            id: m.id, name: m.name, currentActivity: m.currentActivity,
+            startTime: m.startTime, status: m.status, totalDelayAcc: m.totalDelayAcc,
+            activityLog: m.activityLog
+        }));
+        localStorage.setItem('membersDashboard', JSON.stringify(toStore));
+    }
+
+    function loadFromLocalStorage() {
+        const stored = localStorage.getItem('membersDashboard');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length === MEMBERS.length) {
+                    membersState = parsed.map(p => ({
+                        ...p,
+                        activityLog: p.activityLog || []
+                    }));
+                    return true;
+                }
+            } catch(e) { console.warn("Failed to parse localStorage", e); }
+        }
+        membersState = getInitialState();
+        return false;
+    }
+
+    function checkMidnightReset() {
+        const now = new Date();
+        const lastResetDate = localStorage.getItem('lastResetDate');
+        const todayStr = now.toDateString();
+        if (lastResetDate !== todayStr) {
+            membersState = getInitialState();
+            localStorage.setItem('lastResetDate', todayStr);
+            saveToLocalStorage();
+            soundTriggerMap.clear();
+            renderAll(); // Full render only on reset
+            return true;
+        }
+        return false;
+    }
+
+    function getCurrentElapsedAndDelay(member) {
+        if (!member.currentActivity || !member.startTime) return { elapsed: 0, delay: 0, remaining: 0, isLate: false };
+        const now = Date.now();
+        const duration = ACTIVITY_DURATIONS[member.currentActivity];
+        const elapsed = now - member.startTime;
+        const delay = elapsed > duration ? elapsed - duration : 0;
+        return { elapsed, delay, isLate: delay > 0, remaining: Math.max(0, duration - elapsed) };
+    }
+
+    function playAlertSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.frequency.value = 880;
+            gain.gain.value = 0.2;
+            oscillator.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+            oscillator.stop(audioCtx.currentTime + 0.5);
+            audioCtx.resume();
+        } catch(e) { console.log("audio not supported"); }
+    }
+
+    // تحديث عنصر كارت واحد فقط باستخدام DOM المباشر
+    function updateMemberCardUI(member) {
+        const card = document.querySelector(`.member-card[data-member-id='${member.id}']`);
+        if (!card) return;
+
+        const isActive = member.currentActivity !== null;
+        const activityName = isActive ? ACTIVITY_NAMES[member.currentActivity] : "شغال";
+        let timerText = "00:00:00";
+        let elapsedMs = 0, delayMs = 0, percent = 0;
+        
+        if (isActive && member.startTime) {
+            const { elapsed, delay, remaining } = getCurrentElapsedAndDelay(member);
+            elapsedMs = elapsed;
+            delayMs = delay;
+            const totalDuration = ACTIVITY_DURATIONS[member.currentActivity];
+            percent = Math.min(100, (elapsed / totalDuration) * 100);
+            let secs = Math.floor(elapsed / 1000);
+            let hours = Math.floor(secs / 3600);
+            let mins = Math.floor((secs % 3600) / 60);
+            let sec = secs % 60;
+            timerText = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+        }
+        
+        const isLate = delayMs > 0;
+        const cardColor = isLate ? '#ef4444' : (isActive ? ACTIVITY_COLORS[member.currentActivity] : '#10b981');
+        
+        // تحديث العناصر الداخلية
+        const statusBadge = card.querySelector('.status-badge');
+        statusBadge.textContent = isActive ? 'خارج' : 'داخل';
+        statusBadge.style.background = `${cardColor}30`;
+        statusBadge.style.color = cardColor;
+        
+        const activitySpan = card.querySelector('.activity-type');
+        activitySpan.textContent = `📌 النشاط: ${activityName}`;
+        
+        const timerDiv = card.querySelector('.timer');
+        timerDiv.textContent = `⏱️ ${timerText}`;
+        
+        const progressFill = card.querySelector('.progress-fill');
+        progressFill.style.width = `${percent}%`;
+        progressFill.style.background = isLate ? '#ef4444' : cardColor;
+        
+        // تحديث رسالة التأخير
+        let delayMsgDiv = card.querySelector('.delay-message');
+        if (isLate) {
+            if (!delayMsgDiv) {
+                delayMsgDiv = document.createElement('div');
+                delayMsgDiv.className = 'delay-message';
+                delayMsgDiv.style.cssText = 'color:#f97316; font-size:12px; margin-top:8px;';
+                card.appendChild(delayMsgDiv);
+            }
+            delayMsgDiv.textContent = `⚠️ متأخر ${(delayMs/60000).toFixed(1)} دقيقة`;
+        } else {
+            if (delayMsgDiv) delayMsgDiv.remove();
+        }
+        
+        // تحديث الأزرار (بدون إعادة بناء كامل)
+        const btnGroup = card.querySelector('.btn-group');
+        if (btnGroup) {
+            if (!isActive) {
+                btnGroup.innerHTML = `
+                    <button class="start-btn" data-id="${member.id}" data-type="break">☕ بريك</button>
+                    <button class="start-btn" data-id="${member.id}" data-type="prayer">🕌 صلاة</button>
+                    <button class="start-btn" data-id="${member.id}" data-type="bathroom">🚽 حمام</button>
+                `;
+            } else {
+                btnGroup.innerHTML = `<button class="end-btn" data-id="${member.id}">🔚 إنهاء النشاط</button>`;
+            }
+        }
+        
+        // تأثير الاهتزاز
+        if (isLate && !card.classList.contains('pulse-animation')) {
+            card.classList.add('pulse-animation');
+            setTimeout(() => card.classList.remove('pulse-animation'), 500);
+        }
+        
+        // إدارة الصوت عند التأخير
+        const alreadyTriggered = soundTriggerMap.get(member.id) || false;
+        if (isLate && !alreadyTriggered) {
+            soundTriggerMap.set(member.id, true);
+            playAlertSound();
+        } else if (!isLate && alreadyTriggered) {
+            soundTriggerMap.set(member.id, false);
+        }
+    }
+    
+    // تحديث التايمر فقط لكل الكروت (بدون إعادة رسم كامل)
+    function updateTimersOnly() {
+        for (let member of membersState) {
+            updateMemberCardUI(member);
+        }
+    }
+    
+    // دوال الإحصائيات
+    function computeStats() {
+        let totalMembers = membersState.length;
+        let onBreak = 0, onPrayer = 0, onBathroom = 0, lateCount = 0;
+        let totalDelayMs = 0;
+        let totalBreakTimeMs = 0;
+        let allDelays = [];
+        
+        for (let m of membersState) {
+            if (m.currentActivity) {
+                if (m.currentActivity === 'break') onBreak++;
+                else if (m.currentActivity === 'prayer') onPrayer++;
+                else if (m.currentActivity === 'bathroom') onBathroom++;
+                const { delay } = getCurrentElapsedAndDelay(m);
+                if (delay > 0) lateCount++;
+            }
+            
+            let currentDelay = 0;
+            if (m.currentActivity) {
+                currentDelay = getCurrentElapsedAndDelay(m).delay;
+            }
+            let memberTotalDelay = m.totalDelayAcc + currentDelay;
+            totalDelayMs += memberTotalDelay;
+            
+            for (let log of m.activityLog) {
+                if (log.type === 'break') {
+                    totalBreakTimeMs += (log.end - log.start);
+                }
+            }
+            if (m.currentActivity === 'break') {
+                let { elapsed } = getCurrentElapsedAndDelay(m);
+                totalBreakTimeMs += elapsed;
+            }
+            
+            allDelays.push({ 
+                name: m.name, 
+                totalDelay: m.totalDelayAcc + (m.currentActivity ? getCurrentElapsedAndDelay(m).delay : 0) 
+            });
+        }
+        
+        let avgBreakMs = totalBreakTimeMs / totalMembers;
+        let bestMember = allDelays.reduce((a,b) => a.totalDelay <= b.totalDelay ? a : b, allDelays[0]);
+        let worstMember = allDelays.reduce((a,b) => a.totalDelay >= b.totalDelay ? a : b, allDelays[0]);
+        
+        return {
+            totalMembers,
+            onBreak, onPrayer, onBathroom, lateCount,
+            totalDelayMinutes: (totalDelayMs / 60000).toFixed(1),
+            totalBreakMinutes: (totalBreakTimeMs / 60000).toFixed(1),
+            avgBreakMinutes: (avgBreakMs / 60000).toFixed(1),
+            bestMemberName: bestMember?.name,
+            worstMemberName: worstMember?.name
+        };
+    }
+    
+    function renderStats() {
+        const stats = computeStats();
+        const statsContainer = document.getElementById('statsGrid');
+        if (!statsContainer) return;
+        statsContainer.innerHTML = `
+            <div class="stat-card"><h4>👥 عدد المحضرين</h4><div class="value">${stats.totalMembers}</div></div>
+            <div class="stat-card"><h4>☕ بريك</h4><div class="value">${stats.onBreak}</div></div>
+            <div class="stat-card"><h4>🕌 صلاة</h4><div class="value">${stats.onPrayer}</div></div>
+            <div class="stat-card"><h4>🚽 حمام</h4><div class="value">${stats.onBathroom}</div></div>
+            <div class="stat-card"><h4>⚠️ متأخرين</h4><div class="value" style="color:#f97316;">${stats.lateCount}</div></div>
+            <div class="stat-card"><h4>⏲️ إجمالي وقت البريكات</h4><div class="value">${stats.totalBreakMinutes} د</div></div>
+            <div class="stat-card"><h4>📉 متوسط البريك</h4><div class="value">${stats.avgBreakMinutes} د</div></div>
+            <div class="stat-card"><h4>⌛ إجمالي التأخير</h4><div class="value">${stats.totalDelayMinutes} د</div></div>
+            <div class="stat-card"><h4>🏆 أفضل محضر</h4><div class="value">${stats.bestMemberName}</div></div>
+            <div class="stat-card"><h4>📛 أسوأ محضر</h4><div class="value">${stats.worstMemberName}</div></div>
+        `;
+    }
+    
+    function computeStars(member) {
+        let totalDelayMs = member.totalDelayAcc;
+        if (member.currentActivity) {
+            totalDelayMs += getCurrentElapsedAndDelay(member).delay;
+        }
+        let delayMinutes = totalDelayMs / (1000 * 60);
+        let stars = 5.0;
+        let penalty = Math.floor(delayMinutes / 5) * 0.5;
+        stars = Math.max(0, Math.min(5, stars - penalty));
+        return stars;
+    }
+    
+    function renderStars(rating) {
+        let fullStars = Math.floor(rating);
+        let halfStar = (rating % 1) >= 0.5;
+        let emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+        let starsHtml = '⭐'.repeat(fullStars);
+        if (halfStar) starsHtml += '½';
+        starsHtml += '☆'.repeat(emptyStars);
+        return starsHtml;
+    }
+    
+    function renderActivitySidebar(filterText = "") {
+        const container = document.getElementById('activityList');
+        if (!container) return;
+        
+        let filtered = membersState.filter(m => m.activityLog.length > 0);
+        if (filterText.trim()) {
+            filtered = filtered.filter(m => m.name.includes(filterText.trim()));
+        }
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center;">لا يوجد سجل نشاط بعد</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(m => {
+            const breakCount = m.activityLog.filter(l => l.type === 'break').length;
+            const prayerCount = m.activityLog.filter(l => l.type === 'prayer').length;
+            const bathroomCount = m.activityLog.filter(l => l.type === 'bathroom').length;
+            let totalTimeSpent = m.activityLog.reduce((acc, l) => acc + (l.end - l.start), 0);
+            if (m.currentActivity && m.startTime) totalTimeSpent += (Date.now() - m.startTime);
+            let totalDelaySpent = m.totalDelayAcc;
+            if (m.currentActivity) totalDelaySpent += getCurrentElapsedAndDelay(m).delay;
+            const starsVal = computeStars(m);
+            
+            return `
+                <div class="activity-card" style="border-right-color: ${ACTIVITY_COLORS[m.currentActivity || 'break'] || '#666'}">
+                    <div style="display:flex; justify-content:space-between;"><strong>${m.name}</strong> <span class="stars">${renderStars(starsVal)}</span></div>
+                    <div>🚻 بريك: ${breakCount} | 🕌 صلاة: ${prayerCount} | 🚽 حمام: ${bathroomCount}</div>
+                    <div>⏱️ إجمالي الوقت: ${(totalTimeSpent/60000).toFixed(1)} دقيقة</div>
+                    <div class="${totalDelaySpent>0 ? 'delay-text' : 'on-time'}">⏰ إجمالي التأخير: ${(totalDelaySpent/60000).toFixed(1)} دقيقة</div>
+                    <div>⭐ التقييم: ${starsVal.toFixed(1)} / 5</div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // بناء الكروت بالكامل (يحدث فقط عند التغييرات الكبيرة)
+    function renderMainCards() {
+        let membersCopy = [...membersState];
+        membersCopy.sort((a,b) => {
+            const aIsLate = a.currentActivity && getCurrentElapsedAndDelay(a).delay > 0;
+            const bIsLate = b.currentActivity && getCurrentElapsedAndDelay(b).delay > 0;
+            if (aIsLate && !bIsLate) return -1;
+            if (!aIsLate && bIsLate) return 1;
+            const aActive = a.currentActivity !== null;
+            const bActive = b.currentActivity !== null;
+            if (aActive && !bActive) return -1;
+            if (!aActive && bActive) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        
+        const container = document.getElementById('membersGridContainer');
+        if (!container) return;
+        
+        container.innerHTML = membersCopy.map(m => {
+            const isActive = m.currentActivity !== null;
+            let activityName = isActive ? ACTIVITY_NAMES[m.currentActivity] : "شغال";
+            let timerText = "00:00:00";
+            let elapsedMs = 0, delayMs = 0, percent = 0;
+            if (isActive && m.startTime) {
+                const { elapsed, delay, remaining } = getCurrentElapsedAndDelay(m);
+                elapsedMs = elapsed;
+                delayMs = delay;
+                const totalDuration = ACTIVITY_DURATIONS[m.currentActivity];
+                percent = Math.min(100, (elapsed / totalDuration) * 100);
+                let secs = Math.floor(elapsed / 1000);
+                let hours = Math.floor(secs / 3600);
+                let mins = Math.floor((secs % 3600) / 60);
+                let sec = secs % 60;
+                timerText = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+            }
+            const isLate = delayMs > 0;
+            const cardColor = isLate ? '#ef4444' : (isActive ? ACTIVITY_COLORS[m.currentActivity] : '#10b981');
+            const delayMessage = isLate ? `<div class="delay-message" style="color:#f97316; font-size:12px; margin-top:8px;">⚠️ متأخر ${(delayMs/60000).toFixed(1)} دقيقة</div>` : '';
+            
+            return `
+                <div class="member-card" data-member-id="${m.id}" style="border-top: 4px solid ${cardColor};">
+                    <div class="card-header">
+                        <span class="member-name">${m.name}</span>
+                        <span class="status-badge" style="background:${cardColor}30; color:${cardColor};">${isActive ? 'خارج' : 'داخل'}</span>
+                    </div>
+                    <div class="activity-type">📌 النشاط: ${activityName}</div>
+                    <div class="timer">⏱️ ${timerText}</div>
+                    <div class="progress-bar-container"><div class="progress-fill" style="width:${percent}%; background:${isLate?'#ef4444':cardColor}"></div></div>
+                    <div class="btn-group">
+                        ${!isActive ? `<button class="start-btn" data-id="${m.id}" data-type="break">☕ بريك</button>
+                        <button class="start-btn" data-id="${m.id}" data-type="prayer">🕌 صلاة</button>
+                        <button class="start-btn" data-id="${m.id}" data-type="bathroom">🚽 حمام</button>` : 
+                        `<button class="end-btn" data-id="${m.id}">🔚 إنهاء النشاط</button>`}
+                    </div>
+                    ${delayMessage}
+                </div>
+            `;
+        }).join('');
+        
+        // إعادة تطبيق الفلترة بعد الرسم
+        applySearchFilter();
+    }
+    
+    function applySearchFilter() {
+        const term = currentSearchTerm.trim().toLowerCase();
+        const cards = document.querySelectorAll('.member-card');
+        cards.forEach(card => {
+            const nameSpan = card.querySelector('.member-name');
+            if (nameSpan && nameSpan.innerText.toLowerCase().includes(term)) {
+                card.style.display = '';
+            } else {
+                card.style.display = term === '' ? '' : 'none';
+            }
+        });
+    }
+    
+    // دوال التحكم في الأنشطة
+    function startActivity(memberId, activityType) {
+        const member = membersState.find(m => m.id === memberId);
+        if (!member) return;
+        if (member.currentActivity !== null) {
+            alert(`لا يمكن بدء نشاط جديد، ${member.name} لديه نشاط حالي (${ACTIVITY_NAMES[member.currentActivity]})`);
+            return;
+        }
+        const now = Date.now();
+        member.currentActivity = activityType;
+        member.startTime = now;
+        member.status = 'away';
+        soundTriggerMap.set(member.id, false);
+        saveToLocalStorage();
+        // تحديث جزئي
+        renderMainCards();
+        renderStats();
+        renderActivitySidebar(document.getElementById('activitySearchInput')?.value || "");
+    }
+    
+    function endActivity(memberId) {
+        const member = membersState.find(m => m.id === memberId);
+        if (!member || member.currentActivity === null) {
+            alert(`لا يمكن إنهاء نشاط غير موجود للمحضر ${member.name}`);
+            return;
+        }
+        const endTime = Date.now();
+        const start = member.startTime;
+        const actType = member.currentActivity;
+        const durationLimit = ACTIVITY_DURATIONS[actType];
+        const totalSpent = endTime - start;
+        let delayMs = totalSpent > durationLimit ? totalSpent - durationLimit : 0;
+        
+        const logEntry = {
+            type: actType,
+            start: start,
+            end: endTime,
+            delayMs: delayMs,
+            dateStr: new Date().toLocaleString()
+        };
+        member.activityLog.push(logEntry);
+        member.totalDelayAcc += delayMs;
+        member.currentActivity = null;
+        member.startTime = null;
+        member.status = 'working';
+        soundTriggerMap.set(member.id, false);
+        saveToLocalStorage();
+        // تحديث جزئي
+        renderMainCards();
+        renderStats();
+        renderActivitySidebar(document.getElementById('activitySearchInput')?.value || "");
+    }
+    
+    // Event Delegation
+    function setupEventDelegation() {
+        const container = document.getElementById('membersGridContainer');
+        container.addEventListener('click', (e) => {
+            const startBtn = e.target.closest('.start-btn');
+            const endBtn = e.target.closest('.end-btn');
+            if (startBtn) {
+                const id = parseInt(startBtn.dataset.id);
+                const type = startBtn.dataset.type;
+                startActivity(id, type);
+            } else if (endBtn) {
+                const id = parseInt(endBtn.dataset.id);
+                endActivity(id);
+            }
+        });
+    }
+    
+    function setupSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        searchInput.addEventListener('input', (e) => {
+            currentSearchTerm = e.target.value;
+            applySearchFilter();
+        });
+    }
+    
+    function showFullStats() {
+        const modalDiv = document.createElement('div');
+        modalDiv.style.position = 'fixed'; modalDiv.style.top=0; modalDiv.style.left=0; modalDiv.style.width='100%'; modalDiv.style.height='100%'; modalDiv.style.background='rgba(0,0,0,0.95)'; modalDiv.style.zIndex=1000; modalDiv.style.overflow='auto'; modalDiv.style.padding='40px';
+        const stats = computeStats();
+        let allActivitiesHtml = membersState.map(m => {
+            const brk = m.activityLog.filter(l=>l.type==='break').length;
+            const pr = m.activityLog.filter(l=>l.type==='prayer').length;
+            const bath = m.activityLog.filter(l=>l.type==='bathroom').length;
+            let totalDelayAll = m.totalDelayAcc + (m.currentActivity? getCurrentElapsedAndDelay(m).delay:0);
+            const starRating = computeStars(m);
+            return `<div style="background:#1e1f2c; margin:12px; border-radius:24px; padding:16px;"><strong>${m.name}</strong> | بريك:${brk} صلاة:${pr} حمام:${bath} | تأخير:${(totalDelayAll/60000).toFixed(1)}د | نجوم:${renderStars(starRating)}</div>`;
+        }).join('');
+        modalDiv.innerHTML = `
+            <div style="max-width:1000px; margin:auto; background:#0a0c10; border-radius:36px; padding:20px;">
+                <h2>📊 الإحصائيات المتقدمة والكاملة</h2>
+                <button id="closeFullBtn" style="background:#ef4444; margin-bottom:20px;">✖ إغلاق</button>
+                <div class="stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px;">${Object.entries(stats).map(([k,v])=>`<div class="stat-card"><h4>${k}</h4><div class="value">${v}</div></div>`).join('')}</div>
+                <h3>جميع سجلات المحضرين</h3>
+                <div>${allActivitiesHtml}</div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        document.getElementById('closeFullBtn').onclick = () => modalDiv.remove();
+    }
+    
+    function initSidebarControls() {
+        const toggle = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.getElementById('activitySidebar');
+        const closeSide = document.getElementById('closeSidebarBtn');
+        toggle.addEventListener('click', () => { sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none'; });
+        closeSide.addEventListener('click', () => { sidebar.style.display = 'none'; });
+        document.getElementById('activitySearchInput')?.addEventListener('input', (e) => {
+            renderActivitySidebar(e.target.value);
+        });
+        document.getElementById('showAllStatsBtn')?.addEventListener('click', showFullStats);
+    }
+    
+    function renderAll() {
+        renderStats();
+        renderMainCards();
+        renderActivitySidebar(document.getElementById('activitySearchInput')?.value || "");
+    }
+    
+    // التهيئة
+    loadFromLocalStorage();
+    if (!localStorage.getItem('lastResetDate')) localStorage.setItem('lastResetDate', new Date().toDateString());
+    checkMidnightReset();
+    renderAll();
+    setupEventDelegation();
+    setupSearch();
+    initSidebarControls();
+    
+    // تحديث التايمر فقط كل ثانية (بدون Full Re-render)
+    if (intervalId) clearInterval(intervalId);
+    intervalId = setInterval(() => {
+        checkMidnightReset();
+        updateTimersOnly();
+    }, 1000);
+</script>
+</body>
+</html>
